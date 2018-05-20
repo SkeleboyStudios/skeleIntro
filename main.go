@@ -8,16 +8,14 @@ import (
 	"engo.io/engo"
 	"engo.io/engo/common"
 
-	"github.com/gopherjs/gopherjs/js"
-
 	"github.com/SkeleboyStudios/skeleIntro/assets"
+	"github.com/gopherjs/gopherjs/js"
 )
 
 var (
 	centerAnimation *common.Animation
 	width           = 580
 	height          = 370
-	dpi             float32
 )
 
 type anim struct {
@@ -44,7 +42,7 @@ func (*OpeningScene) Preload() {
 func (*OpeningScene) Setup(u engo.Updater) {
 	w, _ := u.(*ecs.World)
 
-	common.SetBackground(color.White)
+	common.SetBackground(color.RGBA{42, 42, 42, 255})
 
 	w.AddSystem(&common.RenderSystem{})
 	w.AddSystem(&common.AnimationSystem{})
@@ -54,8 +52,8 @@ func (*OpeningScene) Setup(u engo.Updater) {
 	centerEntity := &anim{BasicEntity: ecs.NewBasic()}
 	centerEntity.SpaceComponent = common.SpaceComponent{
 		Position: engo.Point{
-			X: engo.ResizeXOffset / (2 * dpi),
-			Y: engo.ResizeYOffset / (2 * dpi),
+			X: engo.ResizeXOffset / 2,
+			Y: engo.ResizeYOffset / 2,
 		},
 		Width:  float32(width),
 		Height: float32(height),
@@ -83,14 +81,13 @@ func main() {
 	println(x)
 	y := js.Global.Get("document").Get("body").Get("clientHeight").Int()
 	println(y)
-	dpi = float32(js.Global.Get("devicePixelRatio").Float())
 	opts := engo.RunOptions{
 		Title:  "Animation Demo",
 		Width:  x,
 		Height: y,
 		GlobalScale: engo.Point{
-			X: dpi * float32(x) / float32(width),
-			Y: dpi * float32(y) / float32(width),
+			X: float32(x) / float32(width),
+			Y: float32(y) / float32(height),
 		},
 	}
 	engo.Run(opts, &OpeningScene{})
