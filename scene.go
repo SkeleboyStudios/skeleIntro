@@ -99,7 +99,8 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 
 	var audioable *common.Audioable
 	var notaudioable *common.NotAudioable
-	w.AddSystemInterface(&common.AudioSystem{}, audioable, notaudioable)
+	var audioSys = &common.AudioSystem{}
+	w.AddSystemInterface(audioSys, audioable, notaudioable)
 
 	// w.AddSystem(&systems.FullScreenSystem{})
 	// w.AddSystem(&systems.ExitSystem{})
@@ -628,7 +629,29 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 				}
 				engo.Mailbox.Dispatch(AcceptSetMessage{
 					AcceptFunc: func() {
-						//send them to letssavesummer!
+						navigateToPageImpl("https://www.letssavesummer.com")
+						audioSys.Pause()
+						engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+						engo.Mailbox.Dispatch(CombatLogMessage{
+							Msg:  "Oh? You're still here?",
+							Fnt:  selFont,
+							Clip: logPlayer,
+						})
+						engo.Mailbox.Dispatch(AcceptSetMessage{
+							AcceptFunc: func() {
+								audioSys.Restart()
+							},
+						})
+						engo.Mailbox.Dispatch(PhaseSetMessage{
+							Phase: AcceptPhase,
+						})
+						engo.Mailbox.Dispatch(PhaseSetMessage{
+							Phase: LogClearPhase,
+						})
+						engo.Mailbox.Dispatch(PhaseSetMessage{
+							Phase: WalkPhase,
+						})
+						engo.Mailbox.Dispatch(PhaseDequeuMessage{})
 					},
 				})
 				engo.Mailbox.Dispatch(PhaseSetMessage{
@@ -977,7 +1000,29 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 				}
 				engo.Mailbox.Dispatch(AcceptSetMessage{
 					AcceptFunc: func() {
-						//send them to discord!
+						navigateToPageImpl("https://discord.gg/WsbR2yZK")
+						audioSys.Pause()
+						engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+						engo.Mailbox.Dispatch(CombatLogMessage{
+							Msg:  "Done Listening?",
+							Fnt:  selFont,
+							Clip: logPlayer,
+						})
+						engo.Mailbox.Dispatch(AcceptSetMessage{
+							AcceptFunc: func() {
+								audioSys.Restart()
+							},
+						})
+						engo.Mailbox.Dispatch(PhaseSetMessage{
+							Phase: AcceptPhase,
+						})
+						engo.Mailbox.Dispatch(PhaseSetMessage{
+							Phase: LogClearPhase,
+						})
+						engo.Mailbox.Dispatch(PhaseSetMessage{
+							Phase: WalkPhase,
+						})
+						engo.Mailbox.Dispatch(PhaseDequeuMessage{})
 					},
 				})
 				engo.Mailbox.Dispatch(PhaseSetMessage{
@@ -1004,10 +1049,50 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 			Func: func() {
 				msgs := []string{"It's an old oak desk."}
 				r := rand.Intn(10)
+				accept := false
+				acceptFunc := func() {}
 				switch r {
 				case 0:
-					msgs = append(msgs, "")
+					msgs = append(msgs, "There's a headset on the desk.")
+					msgs = append(msgs, "wanna put it on?")
+					accept = true
+					acceptFunc = func() {}
+				case 1, 2, 3:
+					msgs = append(msgs, "There's a key still in one of the drawers.")
+					msgs = append(msgs, "Want to try to open it?")
+					accept = true
+					acceptFunc = func() {}
+				case 4, 5, 6, 7:
+					msgs = append(msgs, "There's no work being done on the laptop.")
+					msgs = append(msgs, "Only a ton of unanswered emails, a ")
+					msgs = append(msgs, "realllly long to-do list, ")
+					msgs = append(msgs, "and a lot of weird puppet-based websites open.")
+				case 8, 9:
+					msgs = append(msgs, "There's a floppy disc on the desk labeled")
+					msgs = append(msgs, "...haunted?")
+					msgs = append(msgs, "Put it in the computer and try it?")
+					accept = true
+					acceptFunc = func() {}
+				case 10:
+					if CurrentSave.IsDrawerBroken {
+						msgs = append(msgs, "Looks like when the drawer broke")
+						msgs = append(msgs, "It knocked a bunch of the papers away.")
+						msgs = append(msgs, "Underneath it was a key!")
+						msgs = append(msgs, "Obtained the Desk Key!")
+					} else {
+						msgs = append(msgs, "There's a bunch of papers, floppy discs,")
+						msgs = append(msgs, "half-eaten food containers, and other")
+						msgs = append(msgs, "debris strewn around the desk.")
+					}
 				}
+				for _, msg := range msgs {
+					engo.Mailbox.Dispatch(CombatLogMessage{
+						Msg:  msg,
+						Fnt:  selFont,
+						Clip: logPlayer,
+					})
+				}
+
 			},
 		},
 	})

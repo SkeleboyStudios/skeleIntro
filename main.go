@@ -8,6 +8,8 @@ type SaveData struct {
 	HasNaniteKey    bool
 	HasHoodKey      bool
 	HasPPE          bool
+	HasDeskKey      bool
+	IsDrawerBroken  bool
 	NaniteBoxChecks int
 	MarsChecks      int
 }
