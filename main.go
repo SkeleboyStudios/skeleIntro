@@ -23,5 +23,5 @@ func main() {
 		Height:        360,
 		ScaleOnResize: true,
 	}
-	engo.Run(opts, &SkeleScene{})
+	engo.Run(opts, &SkeleScene{PlayerLocation: engo.Point{X: 300, Y: 125}})
 }

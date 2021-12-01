@@ -21,7 +21,8 @@ const (
 )
 
 type SkeleScene struct {
-	files []string
+	PlayerLocation engo.Point
+	files          []string
 }
 
 func (*SkeleScene) Type() string { return "Skele Scene" }
@@ -158,7 +159,7 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 	playa := playa{BasicEntity: ecs.NewBasic()}
 	playa.Drawable = playaSS.Drawable(0)
 	playa.SetZIndex(2)
-	playa.Position = engo.Point{X: 300, Y: 125}
+	playa.Position = s.PlayerLocation
 	playa.Scale = engo.Point{X: 2, Y: 2}
 	playa.Height = 2 * playa.Drawable.Height()
 	playa.Width = 2 * playa.Drawable.Width()
@@ -1092,7 +1093,25 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 						Clip: logPlayer,
 					})
 				}
-
+				if accept {
+					engo.Mailbox.Dispatch(AcceptSetMessage{
+						AcceptFunc: acceptFunc,
+					})
+					engo.Mailbox.Dispatch(PhaseSetMessage{
+						Phase: AcceptPhase,
+					})
+				} else {
+					engo.Mailbox.Dispatch(PhaseSetMessage{
+						Phase: ListenPhase,
+					})
+				}
+				engo.Mailbox.Dispatch(PhaseSetMessage{
+					Phase: LogClearPhase,
+				})
+				engo.Mailbox.Dispatch(PhaseSetMessage{
+					Phase: WalkPhase,
+				})
+				engo.Mailbox.Dispatch(PhaseDequeuMessage{})
 			},
 		},
 	})
