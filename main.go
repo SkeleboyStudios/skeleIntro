@@ -5,13 +5,22 @@ import (
 )
 
 type SaveData struct {
-	HasNaniteKey    bool
-	HasHoodKey      bool
-	HasPPE          bool
-	HasDeskKey      bool
-	IsDrawerBroken  bool
-	NaniteBoxChecks int
-	MarsChecks      int
+	HasNaniteKey          bool
+	NaniteKeyInSafe       bool
+	HasHoodKey            bool
+	HoodKeyInSafe         bool
+	HasPPE                bool
+	HasDeskKey            bool
+	DeskKeyInSafe         bool
+	IsDrawerBroken        bool
+	NaniteBoxChecks       int
+	MarsChecks            int
+	HasSpookyBoard        bool
+	HasSpookyBoardPointer bool
+	HasSpaceKey           bool
+	SpaceKeyInSafe        bool
+	KeyCount              int
+	IsSafeOpen            bool
 }
 
 var CurrentSave = &SaveData{}
@@ -23,5 +32,9 @@ func main() {
 		Height:        360,
 		ScaleOnResize: true,
 	}
+	CurrentSave.HasSpaceKey = true
+	CurrentSave.HasHoodKey = true
+	CurrentSave.HasNaniteKey = true
+	CurrentSave.HasDeskKey = true
 	engo.Run(opts, &SkeleScene{PlayerLocation: engo.Point{X: 300, Y: 125}})
 }

@@ -55,6 +55,20 @@ func (s *SkeleScene) Preload() {
 		"president/diplomas.png",
 		"president/discord.png",
 		"president/desk.png",
+		"president/crash.ogg",
+		"president/diplomasSS.png",
+		"president/donations.png",
+		"president/engo.png",
+		"president/safe.png",
+		"president/safeSS.png",
+		"space/bg.png",
+		"space/doorSS.png",
+		"space/moon.png",
+		"space/tv.png",
+		"space/tvSS.png",
+		"space/sauce.png",
+		"space/window.png",
+		"space/windowSS.png",
 	}
 
 	for _, file := range s.files {
@@ -154,6 +168,11 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 	logSnd.AudioComponent = common.AudioComponent{Player: logPlayer}
 	logSnd.AudioComponent.Player.SetVolume(0.15)
 	w.AddEntity(&logSnd)
+
+	crashSnd := audio{BasicEntity: ecs.NewBasic()}
+	crashPlayer, _ := common.LoadedPlayer("president/crash.ogg")
+	crashSnd.AudioComponent = common.AudioComponent{Player: crashPlayer}
+	w.AddEntity(&crashSnd)
 
 	playaSS := common.NewSpritesheetWithBorderFromFile("me/playa.png", 23, 45, 1, 1)
 	playa := playa{BasicEntity: ecs.NewBasic()}
@@ -359,7 +378,7 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 			OpenFrames:  []int{0, 1, 2, 3, 4, 5},
 			CloseFrames: []int{5, 4, 3, 2, 1, 0},
 			Button:      "up",
-			TeleportTo:  engo.Point{X: 500, Y: 500},
+			TeleportTo:  engo.Point{X: 394, Y: 1652},
 		},
 		doorInfo{
 			URL:          "lobby/pdoor.png",
@@ -468,7 +487,7 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 					)
 				} else if CurrentSave.NaniteBoxChecks < 10 {
 					msgs = append(msgs, "It's")
-					r := rand.Intn(10)
+					r := rand.Intn(11)
 					switch r {
 					case 0:
 						msgs = append(msgs,
@@ -525,7 +544,7 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 							"This sophiscated 3D printer can print anything",
 							"a rogue scientist might need!",
 						)
-					case 9:
+					case 9, 10:
 						if !CurrentSave.HasPPE {
 							msgs = append(msgs,
 								"It's a pair of nitrile gloves and goggles!",
@@ -884,7 +903,58 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 	lab.interests[1].SetZIndex(5)
 	animSys.Add(lab.interests[1].GetBasicEntity(), lenAnim.GetAnimationComponent(), lab.interests[1].GetRenderComponent())
 
-	newRoom(w, engo.Point{X: 0, Y: 1000}, "president/bg.png", []wallInfo{
+	//diploma animation
+	dipSS := common.NewSpritesheetWithBorderFromFile("president/diplomasSS.png", 64, 64, 1, 1)
+	dipAnim := animation{}
+	dipAnim.AnimationComponent = common.NewAnimationComponent(dipSS.Drawables(), 0.3)
+	dipAnim.AddDefaultAnimation(&common.Animation{
+		Name:   "undisturbed",
+		Frames: []int{0},
+	})
+	dipAnim.AddAnimation(&common.Animation{
+		Name:   "sparkle",
+		Frames: []int{1, 2, 3, 2},
+		Loop:   true,
+	})
+	dipAnim.AddAnimation(&common.Animation{
+		Name:   "empty",
+		Frames: []int{1},
+		Loop:   true,
+	})
+
+	// safe animation
+	safeSS := common.NewSpritesheetWithBorderFromFile("president/safeSS.png", 20, 20, 1, 1)
+	safeAnim := animation{}
+	safeAnim.AnimationComponent = common.NewAnimationComponent(safeSS.Drawables(), 0.3)
+	safeAnim.AddAnimation(&common.Animation{
+		Name:   "0",
+		Frames: []int{0},
+		Loop:   true,
+	})
+	safeAnim.AddAnimation(&common.Animation{
+		Name:   "1",
+		Frames: []int{1},
+		Loop:   true,
+	})
+	safeAnim.AddAnimation(&common.Animation{
+		Name:   "2",
+		Frames: []int{2},
+		Loop:   true,
+	})
+	safeAnim.AddAnimation(&common.Animation{
+		Name:   "3",
+		Frames: []int{3},
+		Loop:   true,
+	})
+	safeAnim.AddAnimation(&common.Animation{
+		Name:   "4",
+		Frames: []int{4},
+	})
+	safeAnim.AddAnimation(&common.Animation{
+		Name:   "open",
+		Frames: []int{4, 5, 6, 7, 8},
+	})
+	pres := newRoom(w, engo.Point{X: 0, Y: 1000}, "president/bg.png", []wallInfo{
 		wallInfo{
 			Width:    380,
 			Height:   50,
@@ -922,6 +992,32 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 			Width:    116,
 			Height:   30,
 		},
+		wallInfo{
+			Shapes: []common.Shape{common.Shape{Lines: []engo.Line{
+				engo.Line{P1: engo.Point{X: 362, Y: 142}, P2: engo.Point{X: 448, Y: 144}},
+				engo.Line{P1: engo.Point{X: 448, Y: 144}, P2: engo.Point{X: 440, Y: 160}},
+				engo.Line{P1: engo.Point{X: 440, Y: 160}, P2: engo.Point{X: 362, Y: 160}},
+				engo.Line{P1: engo.Point{X: 362, Y: 160}, P2: engo.Point{X: 362, Y: 142}},
+			}}},
+		},
+		wallInfo{
+			Shapes: []common.Shape{common.Shape{Lines: []engo.Line{
+				engo.Line{P1: engo.Point{X: 102, Y: 144}, P2: engo.Point{X: 142, Y: 144}},
+				engo.Line{P1: engo.Point{X: 142, Y: 144}, P2: engo.Point{X: 132, Y: 154}},
+				engo.Line{P1: engo.Point{X: 132, Y: 154}, P2: engo.Point{X: 102, Y: 154}},
+				engo.Line{P1: engo.Point{X: 102, Y: 154}, P2: engo.Point{X: 102, Y: 144}},
+			}}},
+		},
+		wallInfo{
+			Position: engo.Point{X: 376, Y: 186},
+			Width:    54,
+			Height:   40,
+		},
+		wallInfo{
+			Position: engo.Point{X: 512, Y: 186},
+			Width:    62,
+			Height:   44,
+		},
 	}, []doorInfo{
 		doorInfo{
 			URL:          "president/doorSS.png",
@@ -944,19 +1040,39 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 	}, []interestInfo{
 		interestInfo{
 			URL:      "president/diplomas.png",
-			Position: engo.Point{X: 228, Y: 62},
+			Position: engo.Point{X: 228, Y: 75},
 			Shapes: []common.Shape{common.Shape{Lines: []engo.Line{
-				engo.Line{P1: engo.Point{X: 0, Y: 80}, P2: engo.Point{X: 62, Y: 80}},
-				engo.Line{P1: engo.Point{X: 62, Y: 80}, P2: engo.Point{X: 62, Y: 100}},
-				engo.Line{P1: engo.Point{X: 62, Y: 100}, P2: engo.Point{X: 0, Y: 100}},
-				engo.Line{P1: engo.Point{X: 0, Y: 100}, P2: engo.Point{X: 0, Y: 80}},
+				engo.Line{P1: engo.Point{X: 0, Y: 68}, P2: engo.Point{X: 62, Y: 68}},
+				engo.Line{P1: engo.Point{X: 62, Y: 68}, P2: engo.Point{X: 62, Y: 88}},
+				engo.Line{P1: engo.Point{X: 62, Y: 88}, P2: engo.Point{X: 0, Y: 88}},
+				engo.Line{P1: engo.Point{X: 0, Y: 88}, P2: engo.Point{X: 0, Y: 68}},
 			}}},
 			Func: func() {
-				msgs := []string{
-					"There's a bunch of diplomas on the wall",
-					"just gathering dust.",
-					"A PhD in WHAT?",
-					"No WAY is that a thing.",
+				msgs := []string{}
+				if CurrentSave.IsDrawerBroken {
+					if CurrentSave.HasSpookyBoardPointer {
+						msgs = []string{
+							"There's nothing else inside.",
+							"The empty hole in the wall serves as a",
+							"reminder of your brute strength.",
+						}
+					} else {
+						msgs = []string{
+							"The diplomas were disturbed when you",
+							"flung the drawer handle through the wall.",
+							"Geeze. This is a disaster.",
+							"Wait a second...",
+							"In the hole there.",
+							"Look inside?",
+						}
+					}
+				} else {
+					msgs = []string{
+						"There's a bunch of diplomas on the wall",
+						"just gathering dust.",
+						"A PhD in WHAT?",
+						"No WAY is that a thing.",
+					}
 				}
 				for _, msg := range msgs {
 					engo.Mailbox.Dispatch(CombatLogMessage{
@@ -965,9 +1081,53 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 						Clip: logPlayer,
 					})
 				}
-				engo.Mailbox.Dispatch(PhaseSetMessage{
-					Phase: ListenPhase,
-				})
+				if CurrentSave.IsDrawerBroken {
+					if CurrentSave.HasSpookyBoardPointer {
+						engo.Mailbox.Dispatch(PhaseSetMessage{
+							Phase: ListenPhase,
+						})
+					} else {
+						engo.Mailbox.Dispatch(AcceptSetMessage{
+							AcceptFunc: func() {
+								msgs2 := []string{
+									"The light was glinting off of",
+									"The pointer of a spooky board.",
+									"You know.",
+									"For talking to the dead.",
+									"OoooooOOOOOoooo",
+									"Found the spooky board pointer!",
+								}
+								CurrentSave.HasSpookyBoardPointer = true
+								dipAnim.SelectAnimationByName("empty")
+								engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+								for _, msg := range msgs2 {
+									engo.Mailbox.Dispatch(CombatLogMessage{
+										Msg:  msg,
+										Fnt:  selFont,
+										Clip: logPlayer,
+									})
+								}
+								engo.Mailbox.Dispatch(PhaseSetMessage{
+									Phase: ListenPhase,
+								})
+								engo.Mailbox.Dispatch(PhaseSetMessage{
+									Phase: LogClearPhase,
+								})
+								engo.Mailbox.Dispatch(PhaseSetMessage{
+									Phase: WalkPhase,
+								})
+								engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+							},
+						})
+						engo.Mailbox.Dispatch(PhaseSetMessage{
+							Phase: AcceptPhase,
+						})
+					}
+				} else {
+					engo.Mailbox.Dispatch(PhaseSetMessage{
+						Phase: ListenPhase,
+					})
+				}
 				engo.Mailbox.Dispatch(PhaseSetMessage{
 					Phase: LogClearPhase,
 				})
@@ -1005,7 +1165,7 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 						audioSys.Pause()
 						engo.Mailbox.Dispatch(PhaseDequeuMessage{})
 						engo.Mailbox.Dispatch(CombatLogMessage{
-							Msg:  "Done Listening?",
+							Msg:  "Done listening?",
 							Fnt:  selFont,
 							Clip: logPlayer,
 						})
@@ -1042,14 +1202,14 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 			URL:      "president/desk.png",
 			Position: engo.Point{X: 152, Y: 120},
 			Shapes: []common.Shape{common.Shape{Lines: []engo.Line{
-				engo.Line{P1: engo.Point{X: 0, Y: 0}, P2: engo.Point{X: 0, Y: 0}},
-				engo.Line{P1: engo.Point{X: 0, Y: 0}, P2: engo.Point{X: 0, Y: 0}},
-				engo.Line{P1: engo.Point{X: 0, Y: 0}, P2: engo.Point{X: 0, Y: 0}},
-				engo.Line{P1: engo.Point{X: 0, Y: 0}, P2: engo.Point{X: 0, Y: 0}},
+				engo.Line{P1: engo.Point{X: 6, Y: 50}, P2: engo.Point{X: 118, Y: 50}},
+				engo.Line{P1: engo.Point{X: 118, Y: 50}, P2: engo.Point{X: 118, Y: 94}},
+				engo.Line{P1: engo.Point{X: 118, Y: 94}, P2: engo.Point{X: 6, Y: 94}},
+				engo.Line{P1: engo.Point{X: 6, Y: 94}, P2: engo.Point{X: 6, Y: 50}},
 			}}},
 			Func: func() {
 				msgs := []string{"It's an old oak desk."}
-				r := rand.Intn(10)
+				r := rand.Intn(11)
 				accept := false
 				acceptFunc := func() {}
 				switch r {
@@ -1057,12 +1217,77 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 					msgs = append(msgs, "There's a headset on the desk.")
 					msgs = append(msgs, "wanna put it on?")
 					accept = true
-					acceptFunc = func() {}
+					acceptFunc = func() {
+						navigateToPageImpl("https://open.spotify.com/playlist/3sFTfG9vBVX1NidgBizVZ7?si=08a7ecd1b7af4338")
+						audioSys.Pause()
+						engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+						engo.Mailbox.Dispatch(CombatLogMessage{
+							Msg:  "Done listening?",
+							Fnt:  selFont,
+							Clip: logPlayer,
+						})
+						engo.Mailbox.Dispatch(AcceptSetMessage{
+							AcceptFunc: func() {
+								audioSys.Restart()
+							},
+						})
+						engo.Mailbox.Dispatch(PhaseSetMessage{
+							Phase: AcceptPhase,
+						})
+						engo.Mailbox.Dispatch(PhaseSetMessage{
+							Phase: LogClearPhase,
+						})
+						engo.Mailbox.Dispatch(PhaseSetMessage{
+							Phase: WalkPhase,
+						})
+						engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+					}
 				case 1, 2, 3:
-					msgs = append(msgs, "There's a key still in one of the drawers.")
-					msgs = append(msgs, "Want to try to open it?")
-					accept = true
-					acceptFunc = func() {}
+					if CurrentSave.IsDrawerBroken {
+						msgs = append(msgs, "The drawer here is completely obliterated.")
+						msgs = append(msgs, "Guess I don't know my own strength!")
+					} else {
+						msgs = append(msgs, "There's a key still in one of the drawers.")
+						msgs = append(msgs, "Want to try to open it?")
+						accept = true
+						acceptFunc = func() {
+							engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+							//gotta roll a 8 or higher!
+							roll := rand.Intn(20)
+							messages := []string{}
+							if roll >= 7 {
+								messages = append(messages, "You gently tug at the drawer handle")
+								messages = append(messages, "...")
+								messages = append(messages, "oops.")
+								CurrentSave.IsDrawerBroken = true
+								crashPlayer.Play()
+								dipAnim.SelectAnimationByName("sparkle")
+							} else {
+								messages = append(messages, "You yank on the drawer")
+								messages = append(messages, "with everything you can muster!")
+								messages = append(messages, "... !!!")
+								messages = append(messages, "... !!! ??? !!!")
+								messages = append(messages, "... it won't budge!")
+							}
+							for _, msg := range messages {
+								engo.Mailbox.Dispatch(CombatLogMessage{
+									Msg:  msg,
+									Fnt:  selFont,
+									Clip: logPlayer,
+								})
+							}
+							engo.Mailbox.Dispatch(PhaseSetMessage{
+								Phase: ListenPhase,
+							})
+							engo.Mailbox.Dispatch(PhaseSetMessage{
+								Phase: LogClearPhase,
+							})
+							engo.Mailbox.Dispatch(PhaseSetMessage{
+								Phase: WalkPhase,
+							})
+							engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+						}
+					}
 				case 4, 5, 6, 7:
 					msgs = append(msgs, "There's no work being done on the laptop.")
 					msgs = append(msgs, "Only a ton of unanswered emails, a ")
@@ -1073,13 +1298,17 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 					msgs = append(msgs, "...haunted?")
 					msgs = append(msgs, "Put it in the computer and try it?")
 					accept = true
-					acceptFunc = func() {}
+					acceptFunc = func() {
+						engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+						println("GHOST FIGHT!?!")
+					}
 				case 10:
 					if CurrentSave.IsDrawerBroken {
 						msgs = append(msgs, "Looks like when the drawer broke")
 						msgs = append(msgs, "It knocked a bunch of the papers away.")
-						msgs = append(msgs, "Underneath it was a key!")
+						msgs = append(msgs, "Underneath them was a key!")
 						msgs = append(msgs, "Obtained the Desk Key!")
+						CurrentSave.HasDeskKey = true
 					} else {
 						msgs = append(msgs, "There's a bunch of papers, floppy discs,")
 						msgs = append(msgs, "half-eaten food containers, and other")
@@ -1114,7 +1343,483 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 				engo.Mailbox.Dispatch(PhaseDequeuMessage{})
 			},
 		},
+		interestInfo{
+			URL:      "president/donations.png",
+			Position: engo.Point{X: 360, Y: 112},
+			Shapes: []common.Shape{common.Shape{Lines: []engo.Line{
+				engo.Line{P1: engo.Point{X: -2, Y: 34}, P2: engo.Point{X: 100, Y: 34}},
+				engo.Line{P1: engo.Point{X: 100, Y: 34}, P2: engo.Point{X: 78, Y: 56}},
+				engo.Line{P1: engo.Point{X: 78, Y: 56}, P2: engo.Point{X: -24, Y: 56}},
+				engo.Line{P1: engo.Point{X: -24, Y: 56}, P2: engo.Point{X: -2, Y: 34}},
+			}}},
+			Func: func() {
+				msgs := []string{
+					"Raising money for a good cause!",
+					"Buying shiny new machines!",
+					"Would you like to drop in a few coins?",
+				}
+				for _, msg := range msgs {
+					engo.Mailbox.Dispatch(CombatLogMessage{
+						Msg:  msg,
+						Fnt:  selFont,
+						Clip: logPlayer,
+					})
+				}
+				engo.Mailbox.Dispatch(AcceptSetMessage{
+					AcceptFunc: func() {
+						navigateToPageImpl("https://www.buymeacoffee.com/Letssavesummer")
+						audioSys.Pause()
+						engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+						engo.Mailbox.Dispatch(CombatLogMessage{
+							Msg:  "Thank you!!!",
+							Fnt:  selFont,
+							Clip: logPlayer,
+						})
+						engo.Mailbox.Dispatch(AcceptSetMessage{
+							AcceptFunc: func() {
+								audioSys.Restart()
+							},
+						})
+						engo.Mailbox.Dispatch(PhaseSetMessage{
+							Phase: AcceptPhase,
+						})
+						engo.Mailbox.Dispatch(PhaseSetMessage{
+							Phase: LogClearPhase,
+						})
+						engo.Mailbox.Dispatch(PhaseSetMessage{
+							Phase: WalkPhase,
+						})
+						engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+					},
+				})
+				engo.Mailbox.Dispatch(PhaseSetMessage{
+					Phase: AcceptPhase,
+				})
+				engo.Mailbox.Dispatch(PhaseSetMessage{
+					Phase: LogClearPhase,
+				})
+				engo.Mailbox.Dispatch(PhaseSetMessage{
+					Phase: WalkPhase,
+				})
+				engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+			},
+		},
+		interestInfo{
+			URL:      "president/engo.png",
+			Position: engo.Point{X: 376, Y: 186},
+			Shapes: []common.Shape{common.Shape{Lines: []engo.Line{
+				engo.Line{P1: engo.Point{X: 24, Y: 0}, P2: engo.Point{X: 100, Y: 0}},
+				engo.Line{P1: engo.Point{X: 100, Y: 0}, P2: engo.Point{X: 46, Y: 56}},
+				engo.Line{P1: engo.Point{X: 46, Y: 56}, P2: engo.Point{X: -32, Y: 56}},
+				engo.Line{P1: engo.Point{X: -32, Y: 56}, P2: engo.Point{X: 24, Y: 0}},
+			}}},
+			Func: func() {
+				msgs := []string{
+					"I goof off for hours with this thing ",
+					"instead of working.",
+					"I mean... ehm.",
+					"It's the game engine all this is built on.",
+					"Fun to use. Open source.",
+					"Wanna check out the website?",
+				}
+				for _, msg := range msgs {
+					engo.Mailbox.Dispatch(CombatLogMessage{
+						Msg:  msg,
+						Fnt:  selFont,
+						Clip: logPlayer,
+					})
+				}
+				engo.Mailbox.Dispatch(AcceptSetMessage{
+					AcceptFunc: func() {
+						navigateToPageImpl("https://engoengine.github.io")
+						audioSys.Pause()
+						engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+						engo.Mailbox.Dispatch(CombatLogMessage{
+							Msg:  "Wasn't that a blast?",
+							Fnt:  selFont,
+							Clip: logPlayer,
+						})
+						engo.Mailbox.Dispatch(AcceptSetMessage{
+							AcceptFunc: func() {
+								audioSys.Restart()
+							},
+						})
+						engo.Mailbox.Dispatch(PhaseSetMessage{
+							Phase: AcceptPhase,
+						})
+						engo.Mailbox.Dispatch(PhaseSetMessage{
+							Phase: LogClearPhase,
+						})
+						engo.Mailbox.Dispatch(PhaseSetMessage{
+							Phase: WalkPhase,
+						})
+						engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+					},
+				})
+				engo.Mailbox.Dispatch(PhaseSetMessage{
+					Phase: AcceptPhase,
+				})
+				engo.Mailbox.Dispatch(PhaseSetMessage{
+					Phase: LogClearPhase,
+				})
+				engo.Mailbox.Dispatch(PhaseSetMessage{
+					Phase: WalkPhase,
+				})
+				engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+			},
+		},
+		interestInfo{
+			URL:      "president/safe.png",
+			Position: engo.Point{X: 104, Y: 116},
+			Shapes: []common.Shape{common.Shape{Lines: []engo.Line{
+				engo.Line{P1: engo.Point{X: -6, Y: 26}, P2: engo.Point{X: 52, Y: 26}},
+				engo.Line{P1: engo.Point{X: 52, Y: 26}, P2: engo.Point{X: 30, Y: 48}},
+				engo.Line{P1: engo.Point{X: 30, Y: 48}, P2: engo.Point{X: -28, Y: 48}},
+				engo.Line{P1: engo.Point{X: -28, Y: 48}, P2: engo.Point{X: -6, Y: 26}},
+			}}},
+			Func: func() {
+				msgs := []string{"It's a top-secret safe!"}
+				var acceptFunc func()
+				if CurrentSave.IsSafeOpen && CurrentSave.HasSpookyBoard {
+					msgs = append(msgs, "...that's already open!")
+				} else {
+					if CurrentSave.HasNaniteKey && !CurrentSave.NaniteKeyInSafe {
+						msgs = append(msgs, "This key slot glows with the power of nanites!")
+						msgs = append(msgs, "Would you like to put the nanite key in the slot?")
+						acceptFunc = func() {
+							CurrentSave.KeyCount++
+							checkKeyCount(&safeAnim, selFont, logPlayer)
+							CurrentSave.NaniteKeyInSafe = true
+							engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+							msgs2 := []string{
+								"You put the nanite key in the safe.",
+								"The safe hums with nanite energy.",
+							}
+							for _, msg := range msgs2 {
+								engo.Mailbox.Dispatch(CombatLogMessage{
+									Msg:  msg,
+									Fnt:  selFont,
+									Clip: logPlayer,
+								})
+							}
+							engo.Mailbox.Dispatch(PhaseSetMessage{
+								Phase: ListenPhase,
+							})
+							engo.Mailbox.Dispatch(PhaseSetMessage{
+								Phase: LogClearPhase,
+							})
+							engo.Mailbox.Dispatch(PhaseSetMessage{
+								Phase: WalkPhase,
+							})
+							engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+						}
+					} else if CurrentSave.HasDeskKey && !CurrentSave.DeskKeyInSafe {
+						msgs = append(msgs, "This key slot is oaken.")
+						msgs = append(msgs, "Pretty strange for an electronic safe.")
+						msgs = append(msgs, "Would you like to put the desk key in the slot?")
+						acceptFunc = func() {
+							CurrentSave.KeyCount++
+							checkKeyCount(&safeAnim, selFont, logPlayer)
+							CurrentSave.DeskKeyInSafe = true
+							engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+							msgs2 := []string{
+								"You put the desk key in the oaken slot.",
+								"The safe begins to photosynthesize.",
+							}
+							for _, msg := range msgs2 {
+								engo.Mailbox.Dispatch(CombatLogMessage{
+									Msg:  msg,
+									Fnt:  selFont,
+									Clip: logPlayer,
+								})
+							}
+							engo.Mailbox.Dispatch(PhaseSetMessage{
+								Phase: ListenPhase,
+							})
+							engo.Mailbox.Dispatch(PhaseSetMessage{
+								Phase: LogClearPhase,
+							})
+							engo.Mailbox.Dispatch(PhaseSetMessage{
+								Phase: WalkPhase,
+							})
+							engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+						}
+					} else if CurrentSave.HasHoodKey && !CurrentSave.HoodKeyInSafe {
+						msgs = append(msgs, "This key slot looks lab grown.")
+						msgs = append(msgs, "Would you like to put the lab key in the slot?")
+						acceptFunc = func() {
+							CurrentSave.KeyCount++
+							checkKeyCount(&safeAnim, selFont, logPlayer)
+							CurrentSave.HoodKeyInSafe = true
+							engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+							msgs2 := []string{
+								"You put the lab key in the safe.",
+								"The safe begins to fizz and pop.",
+								"Hope the chemicals on that key didn't ",
+								"hurt anything.",
+							}
+							for _, msg := range msgs2 {
+								engo.Mailbox.Dispatch(CombatLogMessage{
+									Msg:  msg,
+									Fnt:  selFont,
+									Clip: logPlayer,
+								})
+							}
+							engo.Mailbox.Dispatch(PhaseSetMessage{
+								Phase: ListenPhase,
+							})
+							engo.Mailbox.Dispatch(PhaseSetMessage{
+								Phase: LogClearPhase,
+							})
+							engo.Mailbox.Dispatch(PhaseSetMessage{
+								Phase: WalkPhase,
+							})
+							engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+						}
+					} else if CurrentSave.HasSpaceKey && !CurrentSave.SpaceKeyInSafe {
+						msgs = append(msgs, "This key slot is floating!!")
+						msgs = append(msgs, "Would you like to put the space key in the slot?")
+						acceptFunc = func() {
+							engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+							msgs2 := []string{
+								"You put the space key in the safe.",
+								"The safe appears much lighter.",
+							}
+							for _, msg := range msgs2 {
+								engo.Mailbox.Dispatch(CombatLogMessage{
+									Msg:  msg,
+									Fnt:  selFont,
+									Clip: logPlayer,
+								})
+							}
+							engo.Mailbox.Dispatch(PhaseSetMessage{
+								Phase: ListenPhase,
+							})
+							engo.Mailbox.Dispatch(PhaseSetMessage{
+								Phase: LogClearPhase,
+							})
+							engo.Mailbox.Dispatch(PhaseSetMessage{
+								Phase: WalkPhase,
+							})
+							engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+							checkKeyCount(&safeAnim, selFont, logPlayer)
+							CurrentSave.KeyCount++
+							CurrentSave.SpaceKeyInSafe = true
+						}
+					} else if CurrentSave.DeskKeyInSafe && CurrentSave.NaniteKeyInSafe &&
+						CurrentSave.HoodKeyInSafe && CurrentSave.SpaceKeyInSafe &&
+						!CurrentSave.IsSafeOpen {
+						msgs = append(msgs,
+							"Oh, wow! Looks like you have collected",
+							"All 4 keys!",
+							"Great job!",
+							"Open the safe?",
+						)
+						acceptFunc = func() {
+							engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+							safeAnim.SelectAnimationByName("open")
+							msgs2 := []string{
+								"Inside the safe is...",
+								"A board game?",
+								"Looks like one of those boards for",
+								"talking to spirits.",
+								"Obtained the spooky board!",
+							}
+							CurrentSave.HasSpookyBoard = true
+							CurrentSave.IsSafeOpen = true
+							for _, msg := range msgs2 {
+								engo.Mailbox.Dispatch(CombatLogMessage{
+									Msg:  msg,
+									Fnt:  selFont,
+									Clip: logPlayer,
+								})
+							}
+							engo.Mailbox.Dispatch(PhaseSetMessage{
+								Phase: ListenPhase,
+							})
+							engo.Mailbox.Dispatch(PhaseSetMessage{
+								Phase: LogClearPhase,
+							})
+							engo.Mailbox.Dispatch(PhaseSetMessage{
+								Phase: WalkPhase,
+							})
+							engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+						}
+					} else {
+						msgs = append(msgs, "You don't have any more keys.")
+						msgs = append(msgs, "Look around for more!")
+					}
+				}
+				for _, msg := range msgs {
+					engo.Mailbox.Dispatch(CombatLogMessage{
+						Msg:  msg,
+						Fnt:  selFont,
+						Clip: logPlayer,
+					})
+				}
+				if acceptFunc != nil {
+					engo.Mailbox.Dispatch(AcceptSetMessage{
+						AcceptFunc: acceptFunc,
+					})
+					engo.Mailbox.Dispatch(PhaseSetMessage{
+						Phase: AcceptPhase,
+					})
+				} else {
+					engo.Mailbox.Dispatch(PhaseSetMessage{
+						Phase: ListenPhase,
+					})
+				}
+				engo.Mailbox.Dispatch(PhaseSetMessage{
+					Phase: LogClearPhase,
+				})
+				engo.Mailbox.Dispatch(PhaseSetMessage{
+					Phase: WalkPhase,
+				})
+				engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+			},
+		},
 	})
+
+	animSys.Add(pres.interests[0].GetBasicEntity(), dipAnim.GetAnimationComponent(), pres.interests[0].GetRenderComponent())
+	pres.interests[3].GetRenderComponent().Scale = engo.Point{X: 2, Y: 2}
+	pres.interests[5].GetRenderComponent().Scale = engo.Point{X: 2, Y: 2}
+	animSys.Add(pres.interests[5].GetBasicEntity(), safeAnim.GetAnimationComponent(), pres.interests[5].GetRenderComponent())
+
+	space := newRoom(w, engo.Point{X: 0, Y: 1500}, "space/bg.png", []wallInfo{
+		wallInfo{
+			Shapes: []common.Shape{common.Shape{Lines: []engo.Line{
+				engo.Line{P1: engo.Point{X: 54, Y: 256}, P2: engo.Point{X: 142, Y: 168}},
+				engo.Line{P1: engo.Point{X: 142, Y: 168}, P2: engo.Point{X: 140, Y: 130}},
+				engo.Line{P1: engo.Point{X: 140, Y: 130}, P2: engo.Point{X: 50, Y: 220}},
+				engo.Line{P1: engo.Point{X: 50, Y: 220}, P2: engo.Point{X: 54, Y: 256}},
+			}}},
+		},
+		wallInfo{
+			Shapes: []common.Shape{common.Shape{Lines: []engo.Line{
+				engo.Line{P1: engo.Point{X: 462, Y: 130}, P2: engo.Point{X: 552, Y: 218}},
+				engo.Line{P1: engo.Point{X: 552, Y: 218}, P2: engo.Point{X: 552, Y: 256}},
+				engo.Line{P1: engo.Point{X: 552, Y: 256}, P2: engo.Point{X: 460, Y: 168}},
+				engo.Line{P1: engo.Point{X: 460, Y: 168}, P2: engo.Point{X: 462, Y: 130}},
+			}}},
+		},
+		wallInfo{
+			Position: engo.Point{X: 138, Y: 128},
+			Width:    320,
+			Height:   42,
+		},
+		wallInfo{
+			Position: engo.Point{X: 82, Y: 190},
+			Width:    158,
+			Height:   48,
+		},
+		wallInfo{
+			Position: engo.Point{X: 52, Y: 254},
+			Width:    500,
+			Height:   4,
+		},
+	}, []doorInfo{
+		doorInfo{
+			URL:          "space/doorSS.png",
+			Position:     engo.Point{X: 388, Y: 236},
+			TeleportTo:   engo.Point{X: 382, Y: 88},
+			CellWidth:    40,
+			CellHeight:   10,
+			BorderWidth:  1,
+			BorderHeight: 1,
+			Shapes: []common.Shape{common.Shape{Lines: []engo.Line{
+				engo.Line{P1: engo.Point{X: -10, Y: 0}, P2: engo.Point{X: -10, Y: 20}},
+				engo.Line{P1: engo.Point{X: 10, Y: 20}, P2: engo.Point{X: 70, Y: 20}},
+				engo.Line{P1: engo.Point{X: 70, Y: 20}, P2: engo.Point{X: 70, Y: 0}},
+				engo.Line{P1: engo.Point{X: 70, Y: 0}, P2: engo.Point{X: -10, Y: 0}},
+			}}},
+			OpenFrames:  []int{0, 1, 2},
+			CloseFrames: []int{2, 1, 0},
+			Button:      "down",
+		},
+	}, []interestInfo{
+		interestInfo{
+			URL:      "space/moon.png",
+			Position: engo.Point{X: 102, Y: 144},
+			Shapes: []common.Shape{common.Shape{Lines: []engo.Line{
+				engo.Line{P1: engo.Point{X: -20, Y: 0}, P2: engo.Point{X: 136, Y: 0}},
+				engo.Line{P1: engo.Point{X: 136, Y: 0}, P2: engo.Point{X: 136, Y: 100}},
+				engo.Line{P1: engo.Point{X: 136, Y: 100}, P2: engo.Point{X: -20, Y: 100}},
+				engo.Line{P1: engo.Point{X: -20, Y: 100}, P2: engo.Point{X: -20, Y: 0}},
+			}}},
+			Func: func() {
+				println("moon")
+			},
+		},
+		interestInfo{
+			URL:      "space/tv.png",
+			Position: engo.Point{X: 402, Y: 66},
+			Shapes: []common.Shape{common.Shape{Lines: []engo.Line{
+				engo.Line{P1: engo.Point{X: 0, Y: 75}, P2: engo.Point{X: 60, Y: 75}},
+				engo.Line{P1: engo.Point{X: 60, Y: 75}, P2: engo.Point{X: 60, Y: 105}},
+				engo.Line{P1: engo.Point{X: 60, Y: 105}, P2: engo.Point{X: 0, Y: 105}},
+				engo.Line{P1: engo.Point{X: 0, Y: 105}, P2: engo.Point{X: 0, Y: 75}},
+			}}},
+			Func: func() {
+				println("tv")
+			},
+		},
+		interestInfo{
+			URL:      "space/sauce.png",
+			Position: engo.Point{X: 528, Y: 128},
+			Shapes: []common.Shape{common.Shape{Lines: []engo.Line{
+				engo.Line{P1: engo.Point{X: -56, Y: 56}, P2: engo.Point{X: -6, Y: 56}},
+				engo.Line{P1: engo.Point{X: -6, Y: 56}, P2: engo.Point{X: -6, Y: 116}},
+				engo.Line{P1: engo.Point{X: -6, Y: 116}, P2: engo.Point{X: -56, Y: 116}},
+				engo.Line{P1: engo.Point{X: -56, Y: 116}, P2: engo.Point{X: -56, Y: 56}},
+			}}},
+			Func: func() {
+				println("sauce")
+			},
+		},
+		interestInfo{
+			URL:      "space/window.png",
+			Position: engo.Point{X: 25, Y: -5},
+			Shapes: []common.Shape{common.Shape{Lines: []engo.Line{
+				engo.Line{P1: engo.Point{X: 204, Y: 156}, P2: engo.Point{X: 354, Y: 156}},
+				engo.Line{P1: engo.Point{X: 354, Y: 156}, P2: engo.Point{X: 354, Y: 186}},
+				engo.Line{P1: engo.Point{X: 354, Y: 186}, P2: engo.Point{X: 204, Y: 186}},
+				engo.Line{P1: engo.Point{X: 204, Y: 186}, P2: engo.Point{X: 204, Y: 156}},
+			}}},
+			Func: func() {
+				println("window")
+			},
+		},
+	})
+
+	//tv Animation
+	tvSS := common.NewSpritesheetWithBorderFromFile("space/tvSS.png", 35, 30, 1, 1)
+	tvAnim := animation{}
+	tvAnim.AnimationComponent = common.NewAnimationComponent(tvSS.Drawables(), 0.3)
+	tvAnim.AddDefaultAnimation(&common.Animation{
+		Name:   "scroll",
+		Frames: []int{0, 1, 2, 3, 4, 5, 6, 7},
+		Loop:   true,
+	})
+	tvAnim.AnimationComponent.SelectAnimationByName("scroll")
+	space.interests[1].Drawable = tvSS.Drawable(0)
+	space.interests[1].Scale = engo.Point{X: 2, Y: 2}
+	space.interests[1].SetZIndex(6)
+	animSys.Add(space.interests[1].GetBasicEntity(), tvAnim.GetAnimationComponent(), space.interests[1].GetRenderComponent())
+
+	//window Animation
+	windowSS := common.NewSpritesheetWithBorderFromFile("space/windowSS.png", 275, 80, 1, 1)
+	windowAnim := animation{}
+	windowAnim.AnimationComponent = common.NewAnimationComponent(windowSS.Drawables(), 0.3)
+	windowAnim.AddDefaultAnimation(&common.Animation{
+		Name:   "twinkle",
+		Frames: []int{0, 1, 2, 1},
+		Loop:   true,
+	})
+	windowAnim.AnimationComponent.SelectAnimationByName("twinkle")
+	space.interests[3].Drawable = lenSS.Drawable(0)
+	space.interests[3].Scale = engo.Point{X: 2, Y: 2}
+	space.interests[3].SetZIndex(5)
+	animSys.Add(space.interests[3].GetBasicEntity(), windowAnim.GetAnimationComponent(), space.interests[3].GetRenderComponent())
 
 	msgs := []string{
 		"Where am I?",
@@ -1123,7 +1828,7 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 		"My name is Jerry!",
 		"I make games!",
 		"Currently I'm working on Marsbound",
-		"An SRPG-esque adventure to mars!",
+		"An adventure to mars!",
 		"Look around to see what else is afoot!",
 	}
 	for _, msg := range msgs {
@@ -1142,4 +1847,19 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 	engo.Mailbox.Dispatch(PhaseSetMessage{
 		Phase: WalkPhase,
 	})
+}
+
+func checkKeyCount(a *animation, fnt *common.Font, clip *common.Player) {
+	switch CurrentSave.KeyCount {
+	case 0:
+		a.SelectAnimationByName("0")
+	case 1:
+		a.SelectAnimationByName("1")
+	case 2:
+		a.SelectAnimationByName("2")
+	case 3:
+		a.SelectAnimationByName("3")
+	default:
+		a.SelectAnimationByName("4")
+	}
 }
