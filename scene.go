@@ -21,8 +21,7 @@ const (
 )
 
 type SkeleScene struct {
-	PlayerLocation engo.Point
-	files          []string
+	files []string
 }
 
 func (*SkeleScene) Type() string { return "Skele Scene" }
@@ -178,7 +177,7 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 	playa := playa{BasicEntity: ecs.NewBasic()}
 	playa.Drawable = playaSS.Drawable(0)
 	playa.SetZIndex(2)
-	playa.Position = s.PlayerLocation
+	playa.Position = CurrentSave.PlayerLocation
 	playa.Scale = engo.Point{X: 2, Y: 2}
 	playa.Height = 2 * playa.Drawable.Height()
 	playa.Width = 2 * playa.Drawable.Width()
@@ -1161,7 +1160,7 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 				}
 				engo.Mailbox.Dispatch(AcceptSetMessage{
 					AcceptFunc: func() {
-						navigateToPageImpl("https://discord.gg/WsbR2yZK")
+						navigateToPageImpl("https://discord.gg/QpyyrUY6JR")
 						audioSys.Pause()
 						engo.Mailbox.Dispatch(PhaseDequeuMessage{})
 						engo.Mailbox.Dispatch(CombatLogMessage{
@@ -1288,21 +1287,22 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 							engo.Mailbox.Dispatch(PhaseDequeuMessage{})
 						}
 					}
-				case 4, 5, 6, 7:
+				case 4:
 					msgs = append(msgs, "There's no work being done on the laptop.")
 					msgs = append(msgs, "Only a ton of unanswered emails, a ")
 					msgs = append(msgs, "realllly long to-do list, ")
 					msgs = append(msgs, "and a lot of weird puppet-based websites open.")
-				case 8, 9:
+				case 7, 8, 9:
 					msgs = append(msgs, "There's a floppy disc on the desk labeled")
 					msgs = append(msgs, "...haunted?")
 					msgs = append(msgs, "Put it in the computer and try it?")
 					accept = true
 					acceptFunc = func() {
 						engo.Mailbox.Dispatch(PhaseDequeuMessage{})
-						println("GHOST FIGHT!?!")
+						CurrentSave.PlayerLocation = playa.Position
+						engo.SetSceneByName("Ghost Fight!!!", true)
 					}
-				case 10:
+				case 5, 6, 10:
 					if CurrentSave.IsDrawerBroken {
 						msgs = append(msgs, "Looks like when the drawer broke")
 						msgs = append(msgs, "It knocked a bunch of the papers away.")
@@ -1747,7 +1747,31 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 				engo.Line{P1: engo.Point{X: -20, Y: 100}, P2: engo.Point{X: -20, Y: 0}},
 			}}},
 			Func: func() {
-				println("moon")
+				msgs := []string{
+					"Oh noooooo...",
+					"the moon...",
+					"it's broken!",
+					"I knew I should've found the",
+					"STUD FINDER",
+					"before hanging it!",
+				}
+				for _, msg := range msgs {
+					engo.Mailbox.Dispatch(CombatLogMessage{
+						Msg:  msg,
+						Fnt:  selFont,
+						Clip: logPlayer,
+					})
+				}
+				engo.Mailbox.Dispatch(PhaseSetMessage{
+					Phase: ListenPhase,
+				})
+				engo.Mailbox.Dispatch(PhaseSetMessage{
+					Phase: LogClearPhase,
+				})
+				engo.Mailbox.Dispatch(PhaseSetMessage{
+					Phase: WalkPhase,
+				})
+				engo.Mailbox.Dispatch(PhaseDequeuMessage{})
 			},
 		},
 		interestInfo{
@@ -1760,7 +1784,55 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 				engo.Line{P1: engo.Point{X: 0, Y: 105}, P2: engo.Point{X: 0, Y: 75}},
 			}}},
 			Func: func() {
-				println("tv")
+				msgs := []string{
+					"Mars is all over the news!",
+					"Something big must be going on!",
+					"Want to check it out?",
+				}
+				for _, msg := range msgs {
+					engo.Mailbox.Dispatch(CombatLogMessage{
+						Msg:  msg,
+						Fnt:  selFont,
+						Clip: logPlayer,
+					})
+				}
+				engo.Mailbox.Dispatch(AcceptSetMessage{
+					AcceptFunc: func() {
+						navigateToPageImpl("https://www.marsbound.space")
+						audioSys.Pause()
+						engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+						engo.Mailbox.Dispatch(CombatLogMessage{
+							Msg:  "How was your trip?",
+							Fnt:  selFont,
+							Clip: logPlayer,
+						})
+						engo.Mailbox.Dispatch(AcceptSetMessage{
+							AcceptFunc: func() {
+								audioSys.Restart()
+							},
+						})
+						engo.Mailbox.Dispatch(PhaseSetMessage{
+							Phase: AcceptPhase,
+						})
+						engo.Mailbox.Dispatch(PhaseSetMessage{
+							Phase: LogClearPhase,
+						})
+						engo.Mailbox.Dispatch(PhaseSetMessage{
+							Phase: WalkPhase,
+						})
+						engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+					},
+				})
+				engo.Mailbox.Dispatch(PhaseSetMessage{
+					Phase: AcceptPhase,
+				})
+				engo.Mailbox.Dispatch(PhaseSetMessage{
+					Phase: LogClearPhase,
+				})
+				engo.Mailbox.Dispatch(PhaseSetMessage{
+					Phase: WalkPhase,
+				})
+				engo.Mailbox.Dispatch(PhaseDequeuMessage{})
 			},
 		},
 		interestInfo{
@@ -1773,7 +1845,54 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 				engo.Line{P1: engo.Point{X: -56, Y: 116}, P2: engo.Point{X: -56, Y: 56}},
 			}}},
 			Func: func() {
-				println("sauce")
+				msgs := []string{
+					"Yum! Spicy!",
+					"Wanna check out the SAUCE?",
+				}
+				for _, msg := range msgs {
+					engo.Mailbox.Dispatch(CombatLogMessage{
+						Msg:  msg,
+						Fnt:  selFont,
+						Clip: logPlayer,
+					})
+				}
+				engo.Mailbox.Dispatch(AcceptSetMessage{
+					AcceptFunc: func() {
+						navigateToPageImpl("hhttps://github.com/Noofbiz/MarsBound")
+						audioSys.Pause()
+						engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+						engo.Mailbox.Dispatch(CombatLogMessage{
+							Msg:  "Wasn't that delicious?",
+							Fnt:  selFont,
+							Clip: logPlayer,
+						})
+						engo.Mailbox.Dispatch(AcceptSetMessage{
+							AcceptFunc: func() {
+								audioSys.Restart()
+							},
+						})
+						engo.Mailbox.Dispatch(PhaseSetMessage{
+							Phase: AcceptPhase,
+						})
+						engo.Mailbox.Dispatch(PhaseSetMessage{
+							Phase: LogClearPhase,
+						})
+						engo.Mailbox.Dispatch(PhaseSetMessage{
+							Phase: WalkPhase,
+						})
+						engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+					},
+				})
+				engo.Mailbox.Dispatch(PhaseSetMessage{
+					Phase: AcceptPhase,
+				})
+				engo.Mailbox.Dispatch(PhaseSetMessage{
+					Phase: LogClearPhase,
+				})
+				engo.Mailbox.Dispatch(PhaseSetMessage{
+					Phase: WalkPhase,
+				})
+				engo.Mailbox.Dispatch(PhaseDequeuMessage{})
 			},
 		},
 		interestInfo{
@@ -1786,7 +1905,110 @@ func (s *SkeleScene) Setup(u engo.Updater) {
 				engo.Line{P1: engo.Point{X: 204, Y: 186}, P2: engo.Point{X: 204, Y: 156}},
 			}}},
 			Func: func() {
-				println("window")
+				var acceptFunc func()
+				msgs := []string{
+					"Outside you see glittering stars.",
+					"Space is calling you!",
+					"Apply for an internship at Blue Origin today!",
+				}
+				if !CurrentSave.HasSpaceKey {
+					// roll perception
+					// gotta get a 9 or higher!
+					roll := rand.Intn(20)
+					if roll >= 8 {
+						msgs = append(msgs,
+							"Wait a second.",
+							"In the window there!",
+							"It's a keyboard!",
+							"Show off your",
+							"SICK TYPING SKILLS?",
+						)
+						acceptFunc = func() {
+							engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+							rollAgain := rand.Intn(20)
+							var msgs2 []string
+							if rollAgain < 7 {
+								msgs2 = append(msgs2,
+									"You bash on the keyboard",
+									"with all your might!",
+									"That was fun!",
+									"You never were good at typing.",
+									"Oops.",
+									"Looks like something broke.",
+									"You just slip it in your pocket",
+									"If they can't find the key,",
+									"they won't know it's broken!",
+									"You obtained the",
+									"SPACE KEY",
+								)
+								CurrentSave.HasSpaceKey = true
+							} else if roll < 10 {
+								msgs2 = append(msgs2,
+									"You tap away at the keyboard.",
+									"Nothing really special about it.",
+									"Kinda boring.",
+								)
+							} else {
+								msgs2 = append(msgs2,
+									"You begin tapping away at the keyboard",
+									"On the screen behind you, an intense",
+									"game starts up. You get really into it.",
+									"You lose track of time.",
+									"After playing for what feels like days",
+									"The keyboard gives out.",
+									"The space key finally pops right out!",
+									"You keep it as a momento of that epic game.",
+									"You obtained the",
+									"SPACE KEY",
+								)
+								CurrentSave.HasSpaceKey = true
+							}
+							for _, msg := range msgs2 {
+								engo.Mailbox.Dispatch(CombatLogMessage{
+									Msg:  msg,
+									Fnt:  selFont,
+									Clip: logPlayer,
+								})
+							}
+							engo.Mailbox.Dispatch(PhaseSetMessage{
+								Phase: ListenPhase,
+							})
+							engo.Mailbox.Dispatch(PhaseSetMessage{
+								Phase: LogClearPhase,
+							})
+							engo.Mailbox.Dispatch(PhaseSetMessage{
+								Phase: WalkPhase,
+							})
+							engo.Mailbox.Dispatch(PhaseDequeuMessage{})
+						}
+					}
+				}
+				for _, msg := range msgs {
+					engo.Mailbox.Dispatch(CombatLogMessage{
+						Msg:  msg,
+						Fnt:  selFont,
+						Clip: logPlayer,
+					})
+				}
+				if acceptFunc != nil {
+					engo.Mailbox.Dispatch(AcceptSetMessage{
+						AcceptFunc: acceptFunc,
+					})
+					engo.Mailbox.Dispatch(PhaseSetMessage{
+						Phase: AcceptPhase,
+					})
+				} else {
+					engo.Mailbox.Dispatch(PhaseSetMessage{
+						Phase: ListenPhase,
+					})
+				}
+				engo.Mailbox.Dispatch(PhaseSetMessage{
+					Phase: LogClearPhase,
+				})
+				engo.Mailbox.Dispatch(PhaseSetMessage{
+					Phase: WalkPhase,
+				})
+				engo.Mailbox.Dispatch(PhaseDequeuMessage{})
 			},
 		},
 	})

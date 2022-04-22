@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/EngoEngine/engo"
+	"github.com/EngoEngine/engo/common"
 )
 
 type SaveData struct {
@@ -21,20 +22,29 @@ type SaveData struct {
 	SpaceKeyInSafe        bool
 	KeyCount              int
 	IsSafeOpen            bool
+	RecruitedLen          bool
+	RecruitedMe           bool
+	PlayerLocation        engo.Point
+	DrinkCount            int
+	CookieCount           int
+	BandageCount          int
+	HasMedKit             bool
 }
 
-var CurrentSave = &SaveData{}
+var CurrentSave = &SaveData{
+	PlayerLocation: engo.Point{X: 300, Y: 125},
+}
 
 func main() {
+	common.AddShader(fightShader)
+	skeleScene := &SkeleScene{}
+	engo.RegisterScene(skeleScene)
+	engo.RegisterScene(&GhostFightScene{})
 	opts := engo.RunOptions{
 		Title:         "Skeleboy Studios",
 		Width:         640,
 		Height:        360,
 		ScaleOnResize: true,
 	}
-	CurrentSave.HasSpaceKey = true
-	CurrentSave.HasHoodKey = true
-	CurrentSave.HasNaniteKey = true
-	CurrentSave.HasDeskKey = true
-	engo.Run(opts, &SkeleScene{PlayerLocation: engo.Point{X: 300, Y: 125}})
+	engo.Run(opts, &GhostFightScene{})
 }
