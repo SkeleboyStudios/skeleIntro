@@ -179,12 +179,9 @@ func (s *ItemSelectSystem) Update(dt float32) {
 		if s.curIdx < len(chara.Inventory) {
 			chara.SelectedItem = chara.Inventory[s.curIdx]
 		} else {
-			engo.Mailbox.Dispatch(PhaseSetMessage{
-				Phase: CardSelectPhase,
-			})
-			engo.Mailbox.Dispatch(PhaseDequeuMessage{})
-			return
+			chara.SelectedItem = chara.Inventory[len(chara.Inventory)-1]
 		}
+		chara.IsItemSelected = true
 		engo.Mailbox.Dispatch(PhaseSetMessage{
 			Phase: TargetPhase,
 		})

@@ -63,11 +63,13 @@ type TargetComponent struct {
 type AbilityComponent struct {
 	Abilities       []Ability
 	SelectedAbility Ability
+	IsAbilitySelected bool
 }
 
 type InventoryComponent struct {
 	Inventory    []Item
 	SelectedItem Item
+	IsItemSelected bool
 }
 
 type ChatComponent struct {

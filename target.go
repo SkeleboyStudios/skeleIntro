@@ -94,7 +94,24 @@ func (s *TargetSystem) Update(dt float32) {
 	if chara == nil {
 		return
 	}
+	if chara.IsItemSelected {
+		switch chara.SelectedItem.TargetType {
+		case TargetTypeAll:
+			
+		case TargetTypeAllEnemy:
 
+		case TargetTypeAllFriend:
+
+		case TargetTypeSingleAny:
+
+		case TargetTypeSingleEnemy:
+
+		case TargetTypeSingleFriend:
+
+		}
+	} else if chara.IsAbilitySelected {
+
+	}
 }
 
 func (s *TargetSystem) pause() {

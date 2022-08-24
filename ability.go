@@ -179,12 +179,9 @@ func (s *AbilitySelectSystem) Update(dt float32) {
 		if s.curIdx < len(chara.Abilities) {
 			chara.SelectedAbility = chara.Abilities[s.curIdx]
 		} else {
-			engo.Mailbox.Dispatch(PhaseSetMessage{
-				Phase: CardSelectPhase,
-			})
-			engo.Mailbox.Dispatch(PhaseDequeuMessage{})
-			return
+			chara.SelectedAbility = chara.Abilities[len(chara.Abilities)-1]
 		}
+		chara.IsAbilitySelected = true
 		engo.Mailbox.Dispatch(PhaseSetMessage{
 			Phase: TargetPhase,
 		})
