@@ -26,12 +26,23 @@ func (s *GhostFightScene) Preload() {
 	s.files = []string{
 		"title/move.wav",
 		"title/cursor.png",
+		"title/log.wav",
+		"title/log.ttf",
 		"fight/log.png",
 		"fight/dots.png",
 		"fight/log.ttf",
 		"fight/bg.ogg",
 		"fight/log.wav",
 		"fight/bg.png",
+		"fight/cards.png",
+		"fight/cash.wav",
+		"fight/mimic.png",
+		"fight/you.ttf",
+		"fight/boxes.png",
+		"fight/me.ttf",
+		"fight/len.ttf",
+		"fight/me.wav",
+		"fight/len.wav",
 	}
 
 	for _, file := range s.files {
@@ -92,17 +103,24 @@ func (s *GhostFightScene) Setup(u engo.Updater) {
 	})
 
 	w.AddSystem(&FullScreenSystem{})
-	// w.AddSystem(&systems.ExitSystem{})
+	w.AddSystem(&ExitSystem{})
+
+	var characterable *Characterable
+	w.AddSystemInterface(&BarSystem{}, characterable, nil)
+	w.AddSystemInterface(&CardSelectSystem{}, characterable, nil)
 
 	var phaseable *common.BasicFace
 	w.AddSystemInterface(&PhaseSystem{}, phaseable, nil)
 
 	selFont := &common.Font{
-		Size: 72,
+		Size: 64,
 		FG:   color.RGBA{R: 0xdc, G: 0xd2, B: 0xd2, A: 0xff},
 		URL:  "fight/log.ttf",
 	}
 	selFont.CreatePreloaded()
+
+	w.AddSystemInterface(&AbilitySelectSystem{fnt: selFont}, characterable, nil)
+	w.AddSystemInterface(&ItemSelectSystem{fnt: selFont}, characterable, nil)
 
 	bgm := audio{BasicEntity: ecs.NewBasic()}
 	bgmPlayer, _ := common.LoadedPlayer("fight/bg.ogg")
@@ -117,6 +135,24 @@ func (s *GhostFightScene) Setup(u engo.Updater) {
 	logSnd.AudioComponent.Player.SetVolume(0.15)
 	w.AddEntity(&logSnd)
 
+	youSnd := audio{BasicEntity: ecs.NewBasic()}
+	youPlayer, _ := common.LoadedPlayer("title/log.wav")
+	youSnd.AudioComponent = common.AudioComponent{Player: youPlayer}
+	youSnd.AudioComponent.Player.SetVolume(0.15)
+	w.AddEntity(&youSnd)
+
+	meSnd := audio{BasicEntity: ecs.NewBasic()}
+	mePlayer, _ := common.LoadedPlayer("fight/me.wav")
+	meSnd.AudioComponent = common.AudioComponent{Player: mePlayer}
+	meSnd.AudioComponent.Player.SetVolume(0.15)
+	w.AddEntity(&meSnd)
+
+	lenSnd := audio{BasicEntity: ecs.NewBasic()}
+	lenPlayer, _ := common.LoadedPlayer("fight/len.wav")
+	lenSnd.AudioComponent = common.AudioComponent{Player: lenPlayer}
+	lenSnd.AudioComponent.Player.SetVolume(0.15)
+	w.AddEntity(&lenSnd)
+
 	bg := sprite{BasicEntity: ecs.NewBasic()}
 	tex0, _ := common.LoadedSprite("fight/bg.png")
 	bg.Drawable = pixelshader.PixelRegion{
@@ -126,57 +162,99 @@ func (s *GhostFightScene) Setup(u engo.Updater) {
 	bg.SetZIndex(0)
 	w.AddEntity(&bg)
 
-	cards := common.NewSpriteSheetWithBorderFromFile("fight/cards.png", 0, 0, 1, 1)
-	cardNum := 1
-	if CurrentSave.RecruitedMe {
-		cardNum++
-	}
-	if CurrentSave.RecruitedLen {
-		cardNum++
-	}
+	cards := common.NewSpritesheetWithBorderFromFile("fight/cards.png", 102, 105, 1, 1)
+	boxes := common.NewSpritesheetWithBorderFromFile("fight/boxes.png", 600, 144, 1, 1)
 	youFnt := &common.Font{
 		Size: 64,
 		FG:   color.RGBA{R: 0xdc, G: 0xd2, B: 0xd2, A: 0xff},
 		URL:  "fight/you.ttf",
 	}
 	youFnt.CreatePreloaded()
-	you := AddPlayer(&Character{
-		Name:   "You",
-		Sprite: cards.Drawable(0),
-		HP:     100,
-		MP:     100,
-		Str:    25,
-		Def:    25,
-		Dex:    35,
-		Int:    40,
-		Abilities: []Ability{
-			Ability{},
-		},
-		Font: youFnt,
-	}, cardNum)
-	me := &Player{}
-	if CurrentSave.RecrutedMe {
+	you := AddCharacter(CharacterInfo{
+		Name:          "You",
+		CardSprite:    cards.Drawable(0),
+		BoxSprite:     boxes.Drawable(0),
+		HP:            100,
+		MaxHP:         100,
+		MP:            100,
+		MaxMP:         100,
+		Str:           25,
+		Def:           25,
+		Dex:           35,
+		Int:           40,
+		Font:          youFnt,
+		Clip:          youPlayer,
+		CardTextScale: engo.Point{X: 0.35, Y: 0.35},
+	}, w)
+	you.MoveCard(engo.Point{X: 320 - you.card.Width/2, Y: 360 - you.card.Height - 10})
+	you.AddAbility(LookAroundAbility)
+	you.AddAbility(DefendAbility)
+	you.AddAbility(AskPinAbility)
+	you.AddAbility(GuessPinAbility)
+	you.AddAbility(RegularAttackAbility)
+
+	CurrentSave.RecruitedLen = true
+	CurrentSave.RecruitedMe = true
+	me := &Character{}
+	if CurrentSave.RecruitedMe {
 		meFnt := &common.Font{
 			Size: 64,
 			FG:   color.RGBA{R: 0xdc, G: 0xd2, B: 0xd2, A: 0xff},
 			URL:  "fight/me.ttf",
 		}
 		meFnt.CreatePreloaded()
-		// me = AddPlayer(&Character{
-		//
-		// })
+		me = AddCharacter(CharacterInfo{
+			Name:          "Me",
+			CardSprite:    cards.Drawable(1),
+			BoxSprite:     boxes.Drawable(1),
+			HP:            150,
+			MaxHP:         150,
+			MP:            75,
+			MaxMP:         75,
+			Str:           22,
+			Def:           30,
+			Dex:           30,
+			Int:           25,
+			Font:          meFnt,
+			Clip:          mePlayer,
+			CardTextScale: engo.Point{X: 0.25, Y: 0.25},
+		}, w)
+		you.MoveCard(engo.Point{X: 315 - you.card.Width, Y: 360 - you.card.Height - 10})
+		me.MoveCard(engo.Point{X: 340, Y: 360 - me.card.Height - 10})
 	}
-	len := &Player{}
-	if CurrentSave.RecrutedLen {
+
+	len := &Character{}
+	if CurrentSave.RecruitedLen {
 		lenFnt := &common.Font{
 			Size: 64,
 			FG:   color.RGBA{R: 0xdc, G: 0xd2, B: 0xd2, A: 0xff},
 			URL:  "fight/len.ttf",
 		}
 		lenFnt.CreatePreloaded()
-		// len = AddPlayer(&Character{
-		//
-		// })
+		len = AddCharacter(CharacterInfo{
+			Name:          "Len",
+			CardSprite:    cards.Drawable(2),
+			BoxSprite:     boxes.Drawable(2),
+			HP:            85,
+			MaxHP:         85,
+			MP:            120,
+			MaxMP:         120,
+			Str:           15,
+			Def:           45,
+			Dex:           20,
+			Int:           48,
+			Font:          lenFnt,
+			Clip:          lenPlayer,
+			CardTextScale: engo.Point{X: 0.35, Y: 0.35},
+		}, w)
+		if CurrentSave.RecruitedLen && CurrentSave.RecruitedMe {
+			you.MoveCard(engo.Point{X: 280 - (3 * you.card.Width / 2), Y: 360 - you.card.Height - 10})
+			me.MoveCard(engo.Point{X: 300 - (me.card.Width / 2), Y: 360 - me.card.Height - 10})
+			len.MoveCard(engo.Point{X: 320 + (len.card.Width / 2), Y: 360 - len.card.Height - 10})
+		} else {
+			you.MoveCard(engo.Point{X: 315 - you.card.Width, Y: 360 - you.card.Height - 10})
+			len.MoveCard(engo.Point{X: 340, Y: 360 - len.card.Height - 10})
+		}
 	}
 
 	msgs := []string{
@@ -190,6 +268,6 @@ func (s *GhostFightScene) Setup(u engo.Updater) {
 		})
 	}
 	engo.Mailbox.Dispatch(PhaseSetMessage{
-		Phase: ListenPhase,
+		Phase: CardSelectPhase,
 	})
 }

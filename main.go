@@ -29,6 +29,7 @@ type SaveData struct {
 	CookieCount           int
 	BandageCount          int
 	HasMedKit             bool
+	HasSalt               bool
 }
 
 var CurrentSave = &SaveData{

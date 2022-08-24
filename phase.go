@@ -15,6 +15,10 @@ const (
 	WalkPhase
 	LogClearPhase
 	AcceptPhase
+	CardSelectPhase
+	AbilitySelectPhase
+	ItemSelectPhase
+	TargetPhase
 )
 
 var PhaseSetMessageType = "Phase Set Message"
@@ -122,6 +126,18 @@ func (s *PhaseSystem) Update(dt float32) {
 		engo.Mailbox.Dispatch(AcceptSystemPauseMessage{
 			Pause: true,
 		})
+		engo.Mailbox.Dispatch(CardSelectSystemPauseMessage{
+			Pause: true,
+		})
+		engo.Mailbox.Dispatch(AbilitySelectSystemPauseMessage{
+			Pause: true,
+		})
+		engo.Mailbox.Dispatch(ItemSelectSystemPauseMessage{
+			Pause: true,
+		})
+		engo.Mailbox.Dispatch(TargetSystemPauseMessage{
+			Pause: true,
+		})
 		switch s.setPhase {
 		case ListenPhase:
 			engo.Mailbox.Dispatch(CombatLogPauseMessage{
@@ -146,6 +162,26 @@ func (s *PhaseSystem) Update(dt float32) {
 				Pause: false,
 			})
 			s.acceptLogWait = true
+		case CardSelectPhase:
+			engo.Mailbox.Dispatch(CardSelectSystemPauseMessage{Pause: false})
+			engo.Mailbox.Dispatch(CombatLogPauseMessage{
+				Pause: false,
+			})
+		case AbilitySelectPhase:
+			engo.Mailbox.Dispatch(AbilitySelectSystemPauseMessage{Pause: false})
+			engo.Mailbox.Dispatch(CombatLogPauseMessage{
+				Pause: false,
+			})
+		case ItemSelectPhase:
+			engo.Mailbox.Dispatch(ItemSelectSystemPauseMessage{Pause: false})
+			engo.Mailbox.Dispatch(CombatLogPauseMessage{
+				Pause: false,
+			})
+		case TargetPhase:
+			engo.Mailbox.Dispatch(TargetSystemPauseMessage{Pause: false})
+			engo.Mailbox.Dispatch(CombatLogPauseMessage{
+				Pause: false,
+			})
 		}
 		s.currentPhase = s.setPhase
 	}
@@ -187,6 +223,14 @@ func (s *PhaseSystem) Update(dt float32) {
 		if engo.Input.Button("B").JustPressed() {
 			s.dequeue()
 		}
+	case CardSelectPhase:
+		//also doesn't do anything
+	case AbilitySelectPhase:
+		//not yet
+	case ItemSelectPhase:
+		//nope
+	case TargetPhase:
+		//still nothing
 	}
 }
 
